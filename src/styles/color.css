@@ -1,0 +1,155 @@
+@theme {
+  /*--------------------- Color ---------------------*/
+  /* Primary */
+  --color-primary-blue: #82bcff;
+
+  /* Secondary */
+  --color-secondary-purple: #9399ff;
+  --color-secondary-pink: #e770ff;
+  --color-secondary-light-pink: #f5f5f5;
+
+  /* Surface */
+  --color-surface-main-r: #cfd2ff;
+  --color-surface-main: #fcedff;
+  --color-surface-main-l: #b7e5ff;
+
+  --color-surface-white: #ffffff;
+  --color-surface-disabled: #f7f8fa;
+
+  /* Font */
+  --color-font-on-light: #27265c;
+  --color-font-on-dark: #f6f6f6;
+  --color-font-interactive: #1a6edb;
+  --color-font-disabled: #b1b1b1;
+  --color-font-primary-disabled: #b8cbd9;
+  --color-font-error: #e9635e;
+
+  /* Button */
+  --color-btn-default: #b4d7ff;
+  --color-btn-default-s: #e6f2ff;
+
+  --color-btn-hover: #cde4ff;
+  --color-btn-hover-s: #f3f9ff;
+
+  --color-btn-pressed: #9bc9ff;
+  --color-btn-pressed-s: #cde4ff;
+
+  --color-btn-disabled: #eff4f9;
+
+  /* Secondary Button */
+  --color-btn2-default: #ffffff;
+  --color-btn2-hover: #d2d2d2;
+  --color-btn2-pressed: #d2d2d2;
+  --color-btn2-disabled: #f2f2f2;
+
+  /* Tertiary Button */
+  --color-btn3-hover: #f3f9ff;
+
+  /* Icon */
+  --color-icon-primary: #27265c;
+  --color-icon-secondary: #ffffff;
+
+  /* Border */
+  --color-border-default: #b1b1b1;
+  --color-border-active: #95c6ff;
+  --color-border-error: #e9635e;
+
+  /* System */
+  --color-system-alert: #ec8dff;
+
+  /* Gray */
+  --color-gray-50: #f0f0f0;
+  --color-gray-100: #e0e0e0;
+  --color-gray-200: #c2c2c2;
+  --color-gray-300: #a3a3a3;
+  --color-gray-400: #858585;
+  --color-gray-500: #666666;
+  --color-gray-600: #4d4d4d;
+  --color-gray-700: #333333;
+  --color-gray-800: #1a1a1a;
+  --color-gray-900: #0a0a0a;
+
+  /* Blue */
+  --color-blue-50: #f3f9ff;
+  --color-blue-100: #e6f2ff;
+  --color-blue-200: #cde4ff;
+  --color-blue-300: #b4d7ff;
+  --color-blue-400: #9bc9ff;
+  --color-blue-500: #82bcff;
+  --color-blue-600: #628dbf;
+  --color-blue-700: #415e80;
+  --color-blue-800: #212f40;
+  --color-blue-900: #0d131a;
+
+  /* Purple */
+  --color-purple-50: #f5f5ff;
+  --color-purple-100: #e9ebff;
+  --color-purple-200: #d4d6ff;
+  --color-purple-300: #bec2ff;
+  --color-purple-400: #a9adff;
+  --color-purple-500: #9399ff;
+  --color-purple-600: #6e73bf;
+  --color-purple-700: #4a4d80;
+  --color-purple-800: #252640;
+  --color-purple-900: #0f0f1a;
+
+  /* Pink */
+  --color-pink-50: #fdf1ff;
+  --color-pink-100: #fae2ff;
+  --color-pink-200: #f5c6ff;
+  --color-pink-300: #f1a9ff;
+  --color-pink-400: #ec8dff;
+  --color-pink-500: #e770ff;
+  --color-pink-600: #ad54bf;
+  --color-pink-700: #743880;
+  --color-pink-800: #3a1c40;
+  --color-pink-900: #170b1a;
+
+  /* Light Pink */
+  --color-light-pink-50: #fffaff;
+  --color-light-pink-100: #fdf4ff;
+  --color-light-pink-200: #fbeaff;
+  --color-light-pink-300: #fadfff;
+  --color-light-pink-400: #f8d5ff;
+  --color-light-pink-500: #f6caff;
+  --color-light-pink-600: #b998bf;
+  --color-light-pink-700: #7b6580;
+  --color-light-pink-800: #3e3340;
+  --color-light-pink-900: #19141a;
+
+  /* Red */
+  --color-red-50: #fdf0ef;
+  --color-red-100: #fbe0df;
+  --color-red-200: #f6c1bf;
+  --color-red-300: #f2a19e;
+  --color-red-400: #ed827e;
+  --color-red-500: #e9635e;
+  --color-red-600: #af4a47;
+  --color-red-700: #75322f;
+  --color-red-800: #3a1918;
+  --color-red-900: #170a09;
+
+  /* Green */
+  --color-green-50: #effbf7;
+  --color-green-100: #def5ed;
+  --color-green-200: #beebdc;
+  --color-green-300: #9de1ca;
+  --color-green-400: #7dd7b9;
+  --color-green-500: #5ccda7;
+  --color-green-600: #459a7d;
+  --color-green-700: #2e6754;
+  --color-green-800: #17332a;
+  --color-green-900: #091511;
+
+  /* Yellow */
+  --color-yellow-50: #fffbf2;
+  --color-yellow-100: #fff7e5;
+  --color-yellow-200: #ffefca;
+  --color-yellow-300: #ffe6b0;
+  --color-yellow-400: #ffde95;
+  --color-yellow-500: #ffd67b;
+  --color-yellow-600: #bfa15c;
+  --color-yellow-700: #806b3e;
+  --color-yellow-800: #40361f;
+  --color-yellow-900: #1a150c;
+}

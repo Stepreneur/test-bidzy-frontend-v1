@@ -1,4 +1,8 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+@import '../styles/theme.css';
+@import '../styles/typography.css';
+@import '../styles/color.css';
 
 :root {
   --background: #ffffff;
@@ -8,8 +12,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-kanit);
+  --font-mono: var(--font-kanit);
 }
 
 @media (prefers-color-scheme: dark) {
