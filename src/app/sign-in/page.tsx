@@ -29,9 +29,18 @@ const Sign = () => {
             "role": whichRole
           }),
         })
-        console.log(liff.getIDToken());
-      });
-  }, []);
+        .then(res => res.json())
+        .then(data => {
+          console.log(data)
+        })
+        .catch(err => {
+          console.log(err)
+        })
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }, [whichRole]);
 
   const handleLoginLiff = async () => {
     try {
