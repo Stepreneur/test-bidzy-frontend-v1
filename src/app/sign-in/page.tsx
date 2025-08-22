@@ -18,12 +18,18 @@ const Sign = () => {
 
   // line login
   useEffect(() => {
+    if (!whichRole) return; // Don't run if whichRole is null
+    
     liff.init({
         liffId: '2007827375-02296ylV',
       })
       .then(() => {
+        console.log(whichRole)
         fetch( `${process.env.NEXT_PUBLIC_API_URL}/auth/line/sign-in`, {
           method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify({
             'token' : liff.getIDToken(),
             "role": whichRole
