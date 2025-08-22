@@ -3,6 +3,9 @@ import React from 'react'
 import Image from 'next/image'
 import { useState , useEffect } from 'react';
 
+
+
+
 // Define the type for artwork based on the schema
 interface Artwork {
   id: number;
@@ -50,6 +53,15 @@ interface Artwork {
 }
 
 const Artlist = () => {
+
+  function getCookie(name: string) {
+    return document.cookie
+      .split("; ")
+      .find(row => row.startsWith(name + "="))
+      ?.split("=")[1];
+  }
+  
+  const[token, setToken] = useState(getCookie("accessToken"));
   // number of artworks
   const [numArts, setNumArts] = useState(0)
   const [allArts, setAllArts] = useState<Artwork[]>([])
@@ -63,7 +75,7 @@ const Artlist = () => {
         setError(null)
         
         // Get token from localStorage
-        const token = localStorage.getItem('token')
+        const token = getCookie("accessToken")
         if (!token) {
           throw new Error('No authentication token found')
         }

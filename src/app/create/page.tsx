@@ -5,7 +5,18 @@ import { useRef } from "react"; // เพิ่มเข้าไป
 import Navbar from '@/components/Navbar/page'
 import { ChevronLeftIcon, CloudIcon, UploadIcon, ChevronDownIcon } from '@/components/icons'
 import Image from 'next/image'
+
+
 const page = () => {
+
+  function getCookie(name: string) {
+    return document.cookie
+      .split("; ")
+      .find(row => row.startsWith(name + "="))
+      ?.split("=")[1];
+  }
+  
+  const[token, setToken] = useState(getCookie("accessToken"));
   // for next button 
   const [flowNum , setFlowNum] = useState(1)
 
@@ -454,7 +465,7 @@ const page = () => {
       }
 
       // Get token from localStorage
-      const token = localStorage.getItem('token');
+      const token = getCookie("accessToken");
       if (!token) {
         throw new Error('No authentication token found');
       }

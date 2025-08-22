@@ -5,33 +5,58 @@ import Navbar from '@/components/Navbar/page'
 import { ShareIcon } from '@/components/icons'
 import { ChevronLeftIcon } from '@/components/icons'
 
-// Mock data for auction
-const mockAuctionData = {
-  id: 1,
-  artworkName: "Abstract Harmony",
-  description: "งานศิลปะที่แสดงถึงความสมดุลของสีและรูปทรง\nสร้างจากแรงบันดาลใจจากธรรมชาติ\nและประสบการณ์ส่วนตัวของศิลปิน",
-  size: "60 x 80 cm",
-  technique: "Acrylic on Canvas",
-  style: "Abstract",
-  shipping: "150",
-  phone: "0812345678",
-  facebookName: "Art Mosphere Studio",
-  facebookLink: "https://facebook.com/artmosphere",
-  website: "https://artmosphere.com",
-  startPrice: "2500",
-  minBid: "100",
-  sellPrice: "5000",
-  endTime: "25/12/2024 23:59",
-  creator: "Art Mosphere",
-  creatorImage: "/bidzy/characters/hammer-1.png",
-  images: [
-    "/Artwork.png",
-  ]
+
+
+// Define the type for auction data based on the schema
+interface AuctionData {
+  id: number;
+  title: string;
+  image: string;
+  description: string;
+  size: string;
+  material: string;
+  method: string;
+  style: string;
+  transportPrice: number;
+  phone: string;
+  fbName: string;
+  fbLink: string;
+  websiteLink: string;
+  startingPrice: number;
+  buyNowPrice: number;
+  minimumBidIncrement: number;
+  startAt: string;
+  endAt: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    lineId: string;
+    name: string;
+    image: string;
+    role: string;
+    auctions: string[];
+    bids: Array<{
+      id: number;
+      amount: number;
+      placedAt: string;
+      auction: string;
+      user: string;
+    }>;
+  };
+  bids: Array<{
+    id: number;
+    amount: number;
+    placedAt: string;
+    auction: string;
+    user: string;
+  }>;
 }
 
 const Page = ({ params }: { params: Promise<{ id: string }> }) => {
-  const [auctionData, setAuctionData] = useState(mockAuctionData)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [auctionData, setAuctionData] = useState<AuctionData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
 
   // Unwrap params using React.use()
@@ -43,26 +68,57 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Simulate fetching data based on ID
+  // Fetch auction data based on ID
   useEffect(() => {
-    // In real app, you would fetch data from API using id
-    console.log('Fetching auction data for ID:', id)
-    // For now, we'll use mock data
-    setAuctionData(mockAuctionData)
-    
-    // Check if user came from create page (you can use URL params or localStorage)
-    const fromCreate = new URLSearchParams(window.location.search).get('fromCreate')
-    if (fromCreate === 'true') {
-      setShowSuccessNotification(true)
-      // Remove the parameter from URL
-      window.history.replaceState({}, document.title, window.location.pathname)
-      // Auto-hide notification after 3 seconds
-      setTimeout(() => {
-        setShowSuccessNotification(false)
-      }, 3000)
+    const fetchAuctionData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // Get token from localStorage
+        const token = localStorage.getItem('token')
+        if (!token) {
+          throw new Error('No authentication token found')
+        }
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction/${id}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch auction data')
+        }
+
+        const data: AuctionData = await response.json()
+        setAuctionData(data)
+        
+        // Check if user came from create page
+        const fromCreate = new URLSearchParams(window.location.search).get('fromCreate')
+        if (fromCreate === 'true') {
+          setShowSuccessNotification(true)
+          // Remove the parameter from URL
+          window.history.replaceState({}, document.title, window.location.pathname)
+          // Auto-hide notification after 3 seconds
+          setTimeout(() => {
+            setShowSuccessNotification(false)
+          }, 3000)
+        }
+      } catch (err) {
+        console.error('Error fetching auction data:', err)
+        setError(err instanceof Error ? err.message : 'Failed to fetch auction data')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (id) {
+      fetchAuctionData()
     }
   }, [id])
-
 
   //for sharing
   const share = (id: number) => {
@@ -72,6 +128,26 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
     setModalOpen(true);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#9399FF]"></div>
+        <p className="mt-4 text-[#27265C] font-semibold">กำลังโหลดข้อมูล...</p>
+      </div>
+    )
+  }
+
+  if (error || !auctionData) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+        <div className="text-red-500 text-center">
+          <p className="font-semibold text-lg">เกิดข้อผิดพลาด</p>
+          <p className="text-sm mt-2">{error || 'ไม่พบข้อมูลการประมูล'}</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -96,36 +172,33 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
          onClick={() => {window.location.href='feed'}}
        />
             <div className='flex flex-col'>
-              <span className='font-semibold text-[24px] text-[#27265C]'>สร้างงานประมูล</span>
+              <span className='font-semibold text-[24px] text-[#27265C]'>รายละเอียดการประมูล</span>
             </div>
           <ShareIcon  onClick={() => share(auctionData.id)} />
       </div>
       <div className="max-w-4xl mx-auto p-4">
 
         {/* Creator Info */}
-        <CreatorInfo creatorImage={auctionData.creatorImage} creator={auctionData.creator} responsive={'tablet'} />
+        <CreatorInfo creatorImage={auctionData.user.image} creator={auctionData.user.name} responsive={'tablet'} />
 
         {/* Image Gallery */}
         <div className="w-full mb-6">
-          <div className={`flex gap-3 pb-2 ${auctionData.images.length === 1 ? 'justify-center' : 'overflow-x-auto scrollbar-hide'}`}>
-            {auctionData.images.map((image, index) => (
-              <div key={index} className="relative flex-shrink-0">
-                <div className="relative w-[327px] h-[327px] sm:w-[456px] sm:h-[456px] rounded-lg overflow-hidden border border-gray-200">
-                  <Image
-                    src={image}
-                    alt={`Artwork ${index + 1}`}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
+          <div className="flex gap-3 pb-2 justify-center">
+            <div className="relative flex-shrink-0">
+              <div className="relative w-[327px] h-[327px] sm:w-[456px] sm:h-[456px] rounded-lg overflow-hidden border border-gray-200">
+                <Image
+                  src={auctionData.image}
+                  alt={auctionData.title}
+                  fill
+                  className="object-contain"
+                />
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
         {/* Creator Info */}
-        <CreatorInfo creatorImage={auctionData.creatorImage} creator={auctionData.creator} responsive={'mobile,desktop'} />
-
+        <CreatorInfo creatorImage={auctionData.user.image} creator={auctionData.user.name} responsive={'mobile,desktop'} />
 
         {/* Auction Details */}
         <div className='text-[#27265C] text-[16px] flex flex-col gap-3'>
@@ -133,7 +206,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           
           <div className='flex flex-row'>
             <div className='w-[100px] sm:w-[180px] lg:w-[200px] block'>ชื่อผลงาน :</div>
-            <span>{auctionData.artworkName}</span>
+            <span>{auctionData.title}</span>
           </div>
           
           <div className='flex flex-row'>
@@ -148,7 +221,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           
           <div className='flex flex-row'>
             <div className='w-[100px] sm:w-[180px] lg:w-[200px] block'>วิธีสร้างงาน :</div>
-            <span>{auctionData.technique}</span>
+            <span>{auctionData.method}</span>
           </div>
           
           <div className='flex flex-row'>
@@ -160,7 +233,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           
           <div className='flex flex-row'>
             <div className='w-[100px] sm:w-[180px] lg:w-[200px] block'>ค่าส่ง :</div>
-            <span>{auctionData.shipping} บาท</span>
+            <span>{auctionData.transportPrice} บาท</span>
           </div>
 
           <span className='font-semibold text-[20px] mt-4'>ช่องทางศิลปิน</span>
@@ -170,27 +243,27 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
             <span>{auctionData.phone}</span>
           </div>
           
-          {auctionData.facebookName && (
+          {auctionData.fbName && (
             <div className='flex flex-row'>
               <div className='w-[100px] sm:w-[180px] lg:w-[200px] block'>Facebook :</div>
-              <span>{auctionData.facebookName}</span>
+              <span>{auctionData.fbName}</span>
             </div>
           )}
           
-          {auctionData.facebookLink && (
+          {auctionData.fbLink && (
             <div className='flex flex-row'>
               <div className='w-[100px] sm:w-[180px] lg:w-[200px] block'>ลิงค์ Facebook :</div>
-              <a href={auctionData.facebookLink} target="_blank" rel="noopener noreferrer" className="text-[#1A6EDB] hover:underline">
-                {auctionData.facebookLink}
+              <a href={auctionData.fbLink} target="_blank" rel="noopener noreferrer" className="text-[#1A6EDB] hover:underline">
+                {auctionData.fbLink}
               </a>
             </div>
           )}
           
-          {auctionData.website && (
+          {auctionData.websiteLink && (
             <div className='flex flex-row'>
               <div className='w-[100px] sm:w-[180px] lg:w-[200px] block'>Website :</div>
-              <a href={auctionData.website} target="_blank" rel="noopener noreferrer" className="text-[#1A6EDB] hover:underline">
-                {auctionData.website}
+              <a href={auctionData.websiteLink} target="_blank" rel="noopener noreferrer" className="text-[#1A6EDB] hover:underline">
+                {auctionData.websiteLink}
               </a>
             </div>
           )}
@@ -199,22 +272,27 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           
           <div className='flex flex-row'>
             <div className='w-[100px] sm:w-[180px] lg:w-[200px] block'>ราคาเริ่มต้น :</div>
-            <span>{auctionData.startPrice} บาท</span>
+            <span>{auctionData.startingPrice} บาท</span>
           </div>
           
           <div className='flex flex-row'>
             <div className='w-[100px] sm:w-[180px] lg:w-[200px] block'>ประมูลเพิ่มขั้นต่ำ :</div>
-            <span>{auctionData.minBid} บาท</span>
+            <span>{auctionData.minimumBidIncrement} บาท</span>
           </div>
           
           <div className='flex flex-row'>
             <div className='w-[100px] sm:w-[180px] lg:w-[200px] block'>ราคาขาย :</div>
-            <span>{auctionData.sellPrice} บาท</span>
+            <span>{auctionData.buyNowPrice} บาท</span>
+          </div>
+          
+          <div className='flex flex-row'>
+            <div className='w-[100px] sm:w-[180px] lg:w-[200px] block'>วันเริ่มประมูล :</div>
+            <span>{new Date(auctionData.startAt).toLocaleString('th-TH')}</span>
           </div>
           
           <div className='flex flex-row mb-[80px]'>
             <div className='w-[100px] sm:w-[180px] lg:w-[200px] block'>วันปิดประมูล :</div>
-            <span>{auctionData.endTime}</span>
+            <span>{new Date(auctionData.endAt).toLocaleString('th-TH')}</span>
           </div>
         </div>
         </div>
@@ -252,11 +330,9 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
   )
 }
 
-
-
 const CreatorInfo = ({creatorImage, creator, responsive}: {creatorImage: string, creator: string, responsive: string}) => {
   return (
-    <div className={`flex flex-row gap-4 mb-6 ${responsive == 'mobile,desktop' ? ('flex sm:hidden lg:flex') : responsive == 'tablet' && ('hidden sm:flex lg:hidden')}`}>
+    <div className={`flex flex-row gap-4 mb-6 ${responsive === 'mobile,desktop' ? ('flex sm:hidden lg:flex') : responsive === 'tablet' ? ('hidden sm:flex lg:hidden') : ''}`}>
           <Image src={creatorImage} width={48} height={48} alt='Creator' className="rounded-full lg:w-[72px] lg:h-[72px]" />
           <div className='flex flex-col'>
             <span className='text-[14px] text-[#858585] sm:text-[21px]'>ชื่อศิลปิน</span>
@@ -265,6 +341,5 @@ const CreatorInfo = ({creatorImage, creator, responsive}: {creatorImage: string,
     </div>
   )
 }
-
 
 export default Page

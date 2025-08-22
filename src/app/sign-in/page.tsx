@@ -5,6 +5,7 @@ import { ChevronRightIcon, NoIcon } from '@/components/icons'
 import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import liff from '@line/liff';
+import Cookies from 'js-cookie';
 const Sign = () => {
  // for is sure then press next for user
   const [isSure , setIsSure] = useState(false)
@@ -39,6 +40,12 @@ const Sign = () => {
         .then(data => {
           console.log('success')
           console.log(data)
+          Cookies.set("access_token", data.accessToken, {
+            expires: 365, // วันหมดอายุ (365 วัน)
+            secure: true, // ให้ส่ง cookie เฉพาะ HTTPS
+            sameSite: "None", // ปลอดภัยขึ้น
+            path: "/",
+          });
         })
         .catch(err => {
           console.log(err)
