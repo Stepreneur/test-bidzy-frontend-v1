@@ -22,6 +22,13 @@ const Sign = () => {
         liffId: '2007827375-02296ylV',
       })
       .then(() => {
+        fetch( `${process.env.NEXT_PUBLIC_API_URL}/auth/line/sign-in`, {
+          method: 'POST',
+          body: JSON.stringify({
+            'token' : liff.getIDToken(),
+            "role": whichRole
+          }),
+        })
         console.log(liff.getIDToken());
       });
   }, []);
