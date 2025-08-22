@@ -8,6 +8,8 @@ import Image from 'next/image'
 const Navbar = React.lazy(() => import("@/components/Navbar/page"));
 const Artworks = React.lazy(() => import("@/components/Artlist/page"));
 
+
+
 export default function Feed() {
   return (
     <div className="bg-white w-[100vw] h-[100vh] flex flex-col items-center gap-10">

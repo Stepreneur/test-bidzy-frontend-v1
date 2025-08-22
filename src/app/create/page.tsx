@@ -73,6 +73,10 @@ const page = () => {
   // for character count
   const [wordCount, setWordCount] = useState(0);
 
+  // for API submission
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+
   // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -405,6 +409,88 @@ const page = () => {
     }
   };
 
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateStep2()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Prepare form data
+      const formDataToSend = new FormData();
+      
+      // Add images
+      selectedImages.forEach((image, index) => {
+        formDataToSend.append('image', image);
+      });
+
+      // Add other form fields
+      formDataToSend.append('title', formData.artworkName);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('startingPrice', formData.startPrice);
+      formDataToSend.append('buyNowPrice', formData.sellPrice);
+      formDataToSend.append('minimumBidIncrement', formData.minBid);
+      formDataToSend.append('endAt', formData.endTime);
+      formDataToSend.append('size', formData.size);
+      formDataToSend.append('material', formData.material);
+      formDataToSend.append('method', formData.technique);
+      formDataToSend.append('style', selectedStyles.join(', '));
+      formDataToSend.append('transportPrice', formData.shipping);
+      formDataToSend.append('phone', formData.phone);
+      
+      // Optional fields
+      if (formData.facebookName) {
+        formDataToSend.append('fbName', formData.facebookName);
+      }
+      if (formData.facebookLink) {
+        formDataToSend.append('fbLink', formData.facebookLink);
+      }
+      if (formData.website) {
+        formDataToSend.append('websiteLink', formData.website);
+      }
+
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Send API request
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formDataToSend,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create auction');
+      }
+
+      const result = await response.json();
+      
+      // Show success notification
+      setShowSuccessNotification(true);
+      
+      // Redirect to auction page after 2 seconds
+      setTimeout(() => {
+        window.location.href = `/auction_page/${result.id}?fromCreate=true`;
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error creating auction:', error);
+      setValidationMessage('เกิดข้อผิดพลาดในการสร้างงานประมูล กรุณาลองใหม่อีกครั้ง');
+      setShowValidationPopup(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
 
      return (
      <div className='bg-white w-[100vw] h-[100%] flex flex-col items-center'>
@@ -428,6 +514,32 @@ const page = () => {
               </div>
             </div>
           )}
+
+        {/* Loading Popup */}
+        {isSubmitting && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-[400px] w-full mx-4">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#9399FF] mx-auto mb-4"></div>
+                <p className="text-[#9399FF] font-semibold text-[20px] mb-2">กำลังสร้างงานประมูล</p>
+                <p className="text-[16px] font-semibold text-[#27265C]">กรุณารอสักครู่...</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Success Notification */}
+        {showSuccessNotification && (
+          <div className="fixed inset-0 bg-green-800 bg-opacity-50 flex flex-col items-center justify-end z-50">
+            <Image src='/bidzy/characters/head.png' alt='bidzy character' width={100} height={100} className='object-contain max-w-[300px] w-full' />
+            <div className="bg-white rounded-lg p-6 px-[24px] sm:px-[64px] w-full rounded-b-[0px] max-w-[768px]">
+              <div className="text-center mb-6">
+                <p className="text-[#9399FF] font-semibold text-[20px] mb-2">โพสต์ประมูลสำเร็จ!</p>
+                <p className="text-[16px] font-semibold text-[#27265C]">กำลังนำคุณไปยังหน้างานประมูล...</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Exit Confirmation Popup */}
         {showExitPopup && (
@@ -666,14 +778,14 @@ const page = () => {
               <select 
                 style={{ color: fontColor }} 
                 className={`${inputSize} ${inputStyle} text-opacity-50 focus:border-[#9399FF] focus:outline-none appearance-none pr-10`}
+                value=""
                 onChange={(e) => {
                   if (e.target.value) {
                     handleStyleSelect(e.target.value);
-                    e.target.value = '';
                   }
                 }}
               >
-                <option value="" disabled selected className='text-white/10'>เลือกประเภทงานของคุณ</option>
+                <option value="" disabled className='text-white/10'>เลือกประเภทงานของคุณ</option>
                 <option value="Digital Art">Digital Art</option>
                 <option value="Acrylic Painting">Acrylic Painting</option>
                 <option value="Oil Painting">Oil Painting</option>
@@ -974,7 +1086,14 @@ const page = () => {
                  </div>
                                       <div className='flex flex-row w-full gap-[16px] h-[92px] items-center justify-center'>
                <button type='button' className={`${noBtn}`} onClick={() => setFlowNum(2)}>Back</button>
-               <button type='submit' className={`${yesBtn}`}>Post</button>
+               <button 
+                 type='button' 
+                 className={`${yesBtn} ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                 onClick={handleSubmit}
+                 disabled={isSubmitting}
+               >
+                 {isSubmitting ? 'กำลังโพสต์...' : 'Post'}
+               </button>
              </div>
            </div>
 

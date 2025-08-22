@@ -32,10 +32,16 @@ const mockAuctionData = {
 const Page = ({ params }: { params: Promise<{ id: string }> }) => {
   const [auctionData, setAuctionData] = useState(mockAuctionData)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false)
 
   // Unwrap params using React.use()
   const resolvedParams = React.use(params)
   const { id } = resolvedParams
+
+  //for sharing
+  const [link, setLink] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Simulate fetching data based on ID
   useEffect(() => {
@@ -43,11 +49,47 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
     console.log('Fetching auction data for ID:', id)
     // For now, we'll use mock data
     setAuctionData(mockAuctionData)
+    
+    // Check if user came from create page (you can use URL params or localStorage)
+    const fromCreate = new URLSearchParams(window.location.search).get('fromCreate')
+    if (fromCreate === 'true') {
+      setShowSuccessNotification(true)
+      // Remove the parameter from URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+      // Auto-hide notification after 3 seconds
+      setTimeout(() => {
+        setShowSuccessNotification(false)
+      }, 3000)
+    }
   }, [id])
+
+
+  //for sharing
+  const share = (id: number) => {
+    const link = `${window.location.origin}/auction_page/${id}`;
+    setLink(link);
+    navigator.clipboard.writeText(link);
+    setModalOpen(true);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center">
       <Navbar />
+      
+      {/* Success Notification */}
+      {showSuccessNotification && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+            <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
+              <span className="text-green-500 text-xs">✓</span>
+            </div>
+            <span className="font-semibold">โพสต์ประมูลสำเร็จ!</span>
+          </div>
+        </div>
+      )}
+      
       <div className='w-[327px] sm:w-[608px]'>
       <div className='h-[56px] flex justify-between items-center relative mb-[30px]'>
              <ChevronLeftIcon
@@ -56,7 +98,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
             <div className='flex flex-col'>
               <span className='font-semibold text-[24px] text-[#27265C]'>สร้างงานประมูล</span>
             </div>
-          <ShareIcon />
+          <ShareIcon  onClick={() => share(auctionData.id)} />
       </div>
       <div className="max-w-4xl mx-auto p-4">
 
@@ -177,6 +219,35 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         </div>
         </div>
       </div>
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-[400px] text-center relative flex flex-col gap-10">
+            <button
+              onClick={() => setModalOpen(false)}
+              className="top-0 right-0 !text-black text-3xl px-4 py-2 rounded-lg absolute"
+            >
+              ×
+            </button>
+            <div className="w-[100px] h-full mx-auto ">
+              <Image src="/icon/correct.png" width={1000} height={1000} alt="mascot" className="object-contain" /> 
+            </div>
+            <div className="font-bold text-md">การประมูลเริ่มแล้ว แชร์ลิงค์ไปหานักประมูลเลย</div>
+            <div className="flex flex-row">
+              <div className="text-sm text-gray-800 bg-gray-100 px-4 py-3 rounded-l-xl break-words w-full font-mono text-center flex items-center">
+                {link}
+              </div>
+              <button
+                onClick={() => share(auctionData.id)}
+                className={`px-5 py-2 rounded-r-xl w-max  text-sm font-semibold transition-all shadow-md hover:scale-105 ${
+                  copied ? "bg-green-500 !text-white" : "bg-blue-600 hover:bg-blue-700 !text-white"
+                }`}
+              >
+                {copied ? "คัดลอกเรียบร้อย" : "คัดลอกลิงก์"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
