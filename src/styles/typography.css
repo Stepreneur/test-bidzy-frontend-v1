@@ -109,3 +109,7 @@
   line-height: 0.875rem; /* 14px */
   color: var(--color-headline);
 }
+
+@utility font-family-kanit{
+  font-family: var(--font-kanit);
+}
