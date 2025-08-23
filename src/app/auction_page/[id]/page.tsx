@@ -428,7 +428,7 @@ const ImageGallery = ({ images, title }: { images: string[], title: string }) =>
 
         {/* Thumbnail gallery */}
         {images.length > 1 && (
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex gap-3 overflow-x-auto p-7 scrollbar-hide">
             {images.map((image, index) => (
               <button
                 key={index}
