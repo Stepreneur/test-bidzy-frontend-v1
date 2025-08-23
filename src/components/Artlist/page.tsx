@@ -70,7 +70,7 @@ const Artlist = () => {
       console.log("token updated:", token); // <-- อันนี้จะเห็นค่าหลัง state update
     }
   }, [token]);
-  
+
   // number of artworks
   const [numArts, setNumArts] = useState(0)
   const [allArts, setAllArts] = useState<Artwork[]>([])
@@ -78,50 +78,45 @@ const Artlist = () => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchAuctions = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-        
-        // Get token from localStorage
-        
-        if (!token) {
-          throw new Error('No authentication token found')
-        }
+  if (!token) return; // ยังไม่มี token → ไม่ต้องยิง API
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction/by-user`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        })
+  const fetchAuctions = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch auctions')
-        }
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction/by-user`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
 
-        const data: Artwork[] = await response.json()
-        
-        // Sort by createdAt date (newest first)
-        const sortedData = data.sort((a, b) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
-        
-        setNumArts(sortedData.length)
-        setAllArts(sortedData)
-      } catch (err) {
-        console.error('Error fetching auctions:', err)
-        setError(err instanceof Error ? err.message : 'Failed to fetch auctions')
-        setNumArts(0)
-        setAllArts([])
-      } finally {
-        setIsLoading(false)
+      if (!response.ok) {
+        const text = await response.text(); // ลองอ่านเป็น text แทน
+        throw new Error(`Failed to fetch auctions: ${response.status} - ${text}`)
       }
-    }
 
-    fetchAuctions()
-  }, [token])
+      const data: Artwork[] = await response.json()
+      const sortedData = data.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+      setNumArts(sortedData.length)
+      setAllArts(sortedData)
+    } catch (err) {
+      console.error('Error fetching auctions:', err)
+      setError(err instanceof Error ? err.message : 'Failed to fetch auctions')
+      setNumArts(0)
+      setAllArts([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  fetchAuctions()
+}, [token])
+
 
   if (isLoading) {
     return (
