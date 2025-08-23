@@ -12,7 +12,10 @@ interface AuctionData {
   id: number;
   title: string;
   image: string;
-  images?: string[]; // Optional array of images for gallery
+  images?: Array<{
+    id: number;
+    image: string;
+  }>; // Updated to match API response structure
   description: string;
   size: string;
   material: string;
@@ -251,7 +254,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         <CreatorInfo creatorImage={auctionData.user.image} creator={auctionData.user.name} responsive={'tablet'} />
 
                  {/* Image Gallery */}
-         <ImageGallery images={auctionData.images || [auctionData.image]} title={auctionData.title} />
+         <ImageGallery images={auctionData.images?.map(img => img.image) || [auctionData.image]} title={auctionData.title} />
 
         {/* Creator Info */}
         <CreatorInfo creatorImage={auctionData.user.image} creator={auctionData.user.name} responsive={'mobile,desktop'} />
