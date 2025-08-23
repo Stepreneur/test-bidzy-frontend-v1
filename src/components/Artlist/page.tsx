@@ -62,6 +62,8 @@ const Artlist = () => {
     };
 
     setToken(getCookie("access_token"));
+    console.log(token)
+
   }, []);
   // number of artworks
   const [numArts, setNumArts] = useState(0)

@@ -17,6 +17,7 @@ const page = () => {
     };
 
     setToken(getCookie("access_token"));
+    console.log(token)
   }, []);
 
   const toggleMenu = () => {

@@ -71,6 +71,8 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
     };
 
     setToken(getCookie("access_token"));
+    console.log(token)
+
   }, []);
 
   // Unwrap params using React.use()

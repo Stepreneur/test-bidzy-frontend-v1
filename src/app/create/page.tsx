@@ -21,6 +21,7 @@ const page = () => {
 
   useEffect(() => {
     setToken(getCookie("access_token"));
+    console.log(token)
   }, []);
   // for next button 
   const [flowNum , setFlowNum] = useState(1)
@@ -469,7 +470,7 @@ const page = () => {
         formDataToSend.append('websiteLink', formData.website);
       }
 
-      const token = getCookie("accessToken");
+      const token = getCookie("access_token");
       if (!token) {
         throw new Error('No authentication token found');
       }
