@@ -21,6 +21,27 @@ const Sign = () => {
   const [isFailed , setIsFailed] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
+  //check if logged in
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getCookie = (name: string) => {
+      return document.cookie
+        .split("; ")
+        .find((row) => row.startsWith(name + "="))
+        ?.split("=")[1] || null;
+    };
+
+    setToken(getCookie("access_token"));
+    console.log(token)
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      window.location.href = '/feed';
+    }
+  }, [token]);
+
   // Initialize LIFF only once
   useEffect(() => {    
     const initializeLiff = async () => {
