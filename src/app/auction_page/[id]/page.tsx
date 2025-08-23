@@ -127,7 +127,11 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         console.log('API URL:', `${process.env.NEXT_PUBLIC_API_URL}/auction/${id}`);
 
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction/${id}`, {
-          method: 'GET'
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         })
 
         console.log('Response status:', response.status);
