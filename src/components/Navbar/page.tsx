@@ -16,7 +16,7 @@ const page = () => {
         ?.split("=")[1] || null;
     };
 
-    setToken(getCookie("accessToken"));
+    setToken(getCookie("access_token"));
   }, []);
 
   const toggleMenu = () => {

@@ -70,7 +70,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         ?.split("=")[1] || null;
     };
 
-    setToken(getCookie("accessToken"));
+    setToken(getCookie("access_token"));
   }, []);
 
   // Unwrap params using React.use()

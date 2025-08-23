@@ -20,7 +20,7 @@ const page = () => {
   };
 
   useEffect(() => {
-    setToken(getCookie("accessToken"));
+    setToken(getCookie("access_token"));
   }, []);
   // for next button 
   const [flowNum , setFlowNum] = useState(1)
