@@ -62,6 +62,21 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
 
   const [token, setToken] = useState<string | null>(null);
 
+  // Helper function to check if token is expired
+  const isTokenExpired = (token: string) => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      console.log('Token expiration:', new Date(payload.exp * 1000));
+      console.log('Current time:', new Date(currentTime * 1000));
+      console.log('Is expired:', currentTime > payload.exp);
+      return currentTime > payload.exp;
+    } catch (error) {
+      console.error('Error parsing token:', error);
+      return true; // Consider invalid token as expired
+    }
+  };
+
   useEffect(() => {
     const getCookie = (name: string) => {
       return document.cookie
@@ -70,9 +85,25 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         ?.split("=")[1] || null;
     };
 
-    setToken(getCookie("access_token"));
-    console.log(token)
-
+    const accessToken = getCookie("access_token");
+    console.log('Cookie access_token:', accessToken);
+    
+    if (accessToken) {
+      // Check if token is expired
+      if (isTokenExpired(accessToken)) {
+        console.log('Token is expired, redirecting to sign-in');
+        // Clear expired token
+        document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        window.location.href = '/sign-in';
+        return;
+      }
+      
+      setToken(accessToken);
+    } else {
+      console.log('No access_token found in cookies');
+      // Redirect to sign-in if no token
+      window.location.href = '/sign-in';
+    }
   }, []);
 
   // Unwrap params using React.use()
@@ -91,8 +122,9 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         setIsLoading(true)
         setError(null)
         
-
-        
+        console.log('Fetching auction data for ID:', id);
+        console.log('Token:', token);
+        console.log('API URL:', `${process.env.NEXT_PUBLIC_API_URL}/auction/${id}`);
 
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction/${id}`, {
           method: 'GET',
@@ -102,11 +134,31 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           },
         })
 
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+
         if (!response.ok) {
-          throw new Error('Failed to fetch auction data')
+          const errorText = await response.text();
+          console.log('Error response text:', errorText);
+          
+          // Check if response is HTML (error page)
+          if (errorText.includes('<!DOCTYPE') || errorText.includes('<html')) {
+            throw new Error(`Server error: Received HTML instead of JSON. Status: ${response.status}`);
+          }
+          
+          throw new Error(`Failed to fetch auction data: ${response.status} - ${errorText}`);
+        }
+
+        // Check content type
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.log('Non-JSON response:', text);
+          throw new Error(`Invalid response format. Expected JSON but got: ${contentType}`);
         }
 
         const data: AuctionData = await response.json()
+        console.log('Fetched auction data:', data);
         setAuctionData(data)
         
         // Check if user came from create page
@@ -128,10 +180,14 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
       }
     }
 
-    if (id) {
+    if (id && token) {
       fetchAuctionData()
+    } else if (id && !token) {
+      console.log('No token available, cannot fetch auction data');
+      setError('ไม่พบ token กรุณาเข้าสู่ระบบใหม่');
+      setIsLoading(false);
     }
-  }, [id])
+  }, [id, token])
 
   //for sharing
   const share = (id: number) => {
