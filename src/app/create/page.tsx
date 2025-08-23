@@ -506,18 +506,21 @@ const page = () => {
       // Prepare form data
       const formDataToSend = new FormData();
       
-      // Add images
-      console.log('=== PREPARING TO SEND IMAGES ===');
-      selectedImages.forEach((image, index) => {
-        console.log(`Appending image ${index + 1} to FormData:`, {
-          name: image.name,
-          size: image.size,
-          type: image.type,
-          fieldName: 'image'
-        });
-        formDataToSend.append('image', image);
-      });
-      console.log('=== END PREPARING IMAGES ===');
+             // Add images
+       console.log('=== PREPARING TO SEND IMAGES ===');
+       console.log('Total images to send:', selectedImages.length);
+       
+       selectedImages.forEach((image, index) => {
+         console.log(`Appending image ${index + 1} to FormData:`, {
+           name: image.name,
+           size: image.size,
+           type: image.type,
+           fieldName: 'image',
+           lastModified: new Date(image.lastModified).toISOString()
+         });
+         formDataToSend.append('image', image);
+       });
+       console.log('=== END PREPARING IMAGES ===');
 
       // Add other form fields
       formDataToSend.append('title', formData.artworkName);
@@ -544,14 +547,36 @@ const page = () => {
         formDataToSend.append('websiteLink', formData.website);
       }
 
-      console.log('API URL:', `${process.env.NEXT_PUBLIC_API_URL}/auction`);
-      console.log('Token being sent:', currentToken);
-      console.log('Number of images being sent:', selectedImages.length);
+             console.log('=== API REQUEST DETAILS ===');
+       console.log('API URL:', `${process.env.NEXT_PUBLIC_API_URL}/auction`);
+       console.log('Token being sent:', currentToken);
+       console.log('Number of images being sent:', selectedImages.length);
+       console.log('Content-Type will be: multipart/form-data (auto-set by browser)');
+       console.log('=== END API REQUEST DETAILS ===');
       
-      // Log FormData contents for debugging
-      for (let [key, value] of formDataToSend.entries()) {
-        console.log('FormData entry:', key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
-      }
+             // Log FormData contents for debugging
+       console.log('=== FORM DATA CONTENTS ===');
+       
+       let entryCount = 0;
+       for (let [key, value] of formDataToSend.entries()) {
+         entryCount++;
+         if (value instanceof File) {
+           console.log(`FormData entry [${key}]:`, {
+             type: 'File',
+             name: value.name,
+             size: value.size,
+             mimeType: value.type,
+             lastModified: new Date(value.lastModified).toISOString()
+           });
+         } else {
+           console.log(`FormData entry [${key}]:`, {
+             type: 'String',
+             value: value
+           });
+         }
+       }
+       console.log('Total FormData entries:', entryCount);
+       console.log('=== END FORM DATA CONTENTS ===');
 
       // Send API request
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction`, {
@@ -562,8 +587,14 @@ const page = () => {
         body: formDataToSend,
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
+             console.log('=== RESPONSE DETAILS ===');
+       console.log('Response status:', response.status);
+       console.log('Response status text:', response.statusText);
+       console.log('Response headers:');
+       response.headers.forEach((value, key) => {
+         console.log(`  ${key}: ${value}`);
+       });
+       console.log('=== END RESPONSE DETAILS ===');
 
       if (!response.ok) {
         const errorText = await response.text();
