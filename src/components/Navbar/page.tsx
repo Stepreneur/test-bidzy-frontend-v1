@@ -20,6 +20,19 @@ const page = () => {
     console.log(token)
   }, []);
 
+  const handleLogout = () => {
+    // Clear the access_token cookie by setting it to expire immediately
+    document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    setToken(null);
+    // Redirect to sign-in page
+    window.location.href = '/sign-in';
+  };
+
+  const handleLogin = () => {
+    // Redirect to sign-in page
+    window.location.href = '/sign-in';
+  };
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -70,14 +83,20 @@ const page = () => {
                   {token ? (
                   <button 
                     className='flex items-center w-full px-4 py-3 text-[16px] text-[#E9635E] hover:bg-red-50 rounded-[12px] border-none transition-colors'
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      handleLogout();
+                    }}
                   >
                     <span>ออกจากระบบ</span>
                   </button>
                   ) : (
                     <button 
                     className='flex items-center w-full px-4 py-3 text-[16px] text-[#27265C]  hover:bg-red-50 rounded-[12px] border-none transition-colors'
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      handleLogin();
+                    }}
                   >
                     <span>เข้าสู่ระบบ</span>
                   </button>
@@ -87,9 +106,19 @@ const page = () => {
             )}
           </div>
           {token ? (
-            <button className='hidden lg:flex items-center justify-center w-[85px] py-[12px] rounded-[20px] h-[44px] font-semibold text-[16px]  border-none text-[#E9635E]  hover:bg-red-50 transition-colors'>Log out</button>
+            <button 
+              onClick={handleLogout}
+              className='hidden lg:flex items-center justify-center w-[85px] py-[12px] rounded-[20px] h-[44px] font-semibold text-[16px]  border-none text-[#E9635E]  hover:bg-red-50 transition-colors'
+            >
+              Log out
+            </button>
           ) : (
-            <button className='hidden lg:flex items-center justify-center w-[85px] py-[12px] rounded-[20px] h-[44px] font-semibold text-[16px]  border-none text-[#27265C]  hover:bg-red-50 transition-colors'>Log in</button>
+            <button 
+              onClick={handleLogin}
+              className='hidden lg:flex items-center justify-center w-[85px] py-[12px] rounded-[20px] h-[44px] font-semibold text-[16px]  border-none text-[#27265C]  hover:bg-red-50 transition-colors'
+            >
+              Log in
+            </button>
           )}
         </div>
         
