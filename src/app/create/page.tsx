@@ -4,22 +4,22 @@ import {useState , useEffect} from 'react'
 import { useRef } from "react"; // เพิ่มเข้าไป 
 import Navbar from '@/components/Navbar/page'
 import { ChevronLeftIcon, CloudIcon, UploadIcon, ChevronDownIcon } from '@/components/icons'
-import Image from 'next/image'
-
+import Image from 'next/image' 
 
 const page = () => {
 
   
   const [token, setToken] = useState<string | null>(null);
 
-  useEffect(() => {
-    const getCookie = (name: string) => {
-      return document.cookie
-        .split("; ")
-        .find((row) => row.startsWith(name + "="))
-        ?.split("=")[1] || null;
-    };
+  // Helper function to get cookie
+  const getCookie = (name: string) => {
+    return document.cookie
+      .split("; ")
+      .find((row) => row.startsWith(name + "="))
+      ?.split("=")[1] || null;
+  };
 
+  useEffect(() => {
     setToken(getCookie("accessToken"));
   }, []);
   // for next button 
@@ -469,7 +469,6 @@ const page = () => {
         formDataToSend.append('websiteLink', formData.website);
       }
 
-      // Get token from localStorage
       const token = getCookie("accessToken");
       if (!token) {
         throw new Error('No authentication token found');
