@@ -555,37 +555,60 @@ const page = () => {
        console.log('=== END API REQUEST DETAILS ===');
       
              // Log FormData contents for debugging
-       console.log('=== FORM DATA CONTENTS ===');
+       console.log('=== FORM DATA CONTENTS BEFORE SENDING ===');
+       console.log('FormData object:', formDataToSend);
+       console.log('FormData constructor:', formDataToSend.constructor.name);
        
        let entryCount = 0;
+       let imageCount = 0;
+       let textCount = 0;
+       
        for (let [key, value] of formDataToSend.entries()) {
          entryCount++;
          if (value instanceof File) {
-           console.log(`FormData entry [${key}]:`, {
+           imageCount++;
+           console.log(`FormData entry [${entryCount}] [${key}]:`, {
              type: 'File',
              name: value.name,
              size: value.size,
              mimeType: value.type,
-             lastModified: new Date(value.lastModified).toISOString()
+             lastModified: new Date(value.lastModified).toISOString(),
+             fieldName: key
            });
          } else {
-           console.log(`FormData entry [${key}]:`, {
+           textCount++;
+           console.log(`FormData entry [${entryCount}] [${key}]:`, {
              type: 'String',
-             value: value
+             value: value,
+             fieldName: key
            });
          }
        }
+       
+       console.log('=== FORM DATA SUMMARY ===');
        console.log('Total FormData entries:', entryCount);
+       console.log('Image files:', imageCount);
+       console.log('Text fields:', textCount);
        console.log('=== END FORM DATA CONTENTS ===');
 
-      // Send API request
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${currentToken}`,
-        },
-        body: formDataToSend,
-      });
+             // Send API request
+       console.log('=== SENDING API REQUEST ===');
+       console.log('Method: POST');
+       console.log('URL:', `${process.env.NEXT_PUBLIC_API_URL}/auction`);
+       console.log('Headers:', {
+         'Authorization': `Bearer ${currentToken}`,
+         'Content-Type': 'multipart/form-data (auto-set by browser)'
+       });
+       console.log('Body: FormData object with', entryCount, 'entries');
+       console.log('=== END SENDING API REQUEST ===');
+       
+       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction`, {
+         method: 'POST',
+         headers: {
+           'Authorization': `Bearer ${currentToken}`,
+         },
+         body: formDataToSend,
+       });
 
              console.log('=== RESPONSE DETAILS ===');
        console.log('Response status:', response.status);
