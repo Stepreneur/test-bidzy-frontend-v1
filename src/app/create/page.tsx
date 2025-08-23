@@ -700,7 +700,7 @@ const page = () => {
 
         {/* Loading Popup */}
         {isSubmitting && (
-          <div className="w-[100vw] h-[100vh] flex justify-center items-center relative">
+          <div className="w-[100vw] h-[100vh] flex justify-center items-center  fixed top-0 left-0 z-50">
           <div className="w-[100vw] h-[100vh] bg-[url('/Artwork.png')] bg-repeat bg-contain absolute"></div>
             <span className="text-[#27265C] font-semibold text-[32px] z-10">Loading...</span>
             </div>
