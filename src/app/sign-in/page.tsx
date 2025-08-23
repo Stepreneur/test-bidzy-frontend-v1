@@ -29,6 +29,7 @@ const Sign = () => {
         setIsFailed(false)
         setIsLoading(true)
         console.log(whichRole)
+        console.log(liff.getIDToken())
         fetch( `${process.env.NEXT_PUBLIC_API_URL}/auth/line/sign-in`, {
           method: 'POST',
           headers: {
@@ -64,7 +65,7 @@ const Sign = () => {
         setIsLoading(false)
         setIsFailed(true)
       })
-  }, [whichRole]);
+  }, []);
 
   const handleLoginLiff = async () => {
     try {
