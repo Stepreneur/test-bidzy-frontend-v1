@@ -617,7 +617,7 @@ const page = () => {
        
        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction`, {
          method: 'POST',
-         headers: {
+         headers: { 
            'Authorization': `Bearer ${currentToken}`,
          },
          body: formDataToSend,
@@ -700,15 +700,10 @@ const page = () => {
 
         {/* Loading Popup */}
         {isSubmitting && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 max-w-[400px] w-full mx-4">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#9399FF] mx-auto mb-4"></div>
-                <p className="text-[#9399FF] font-semibold text-[20px] mb-2">กำลังสร้างงานประมูล</p>
-                <p className="text-[16px] font-semibold text-[#27265C]">กรุณารอสักครู่...</p>
-              </div>
+          <div className="w-[100vw] h-[100vh] flex justify-center items-center relative">
+          <div className="w-[100vw] h-[100vh] bg-[url('/Artwork.png')] bg-repeat bg-contain absolute"></div>
+            <span className="text-[#27265C] font-semibold text-[32px] z-10">Loading...</span>
             </div>
-          </div>
         )}
 
         {/* Success Notification */}
