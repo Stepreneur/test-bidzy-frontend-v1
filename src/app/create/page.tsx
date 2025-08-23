@@ -8,8 +8,8 @@ import Image from 'next/image'
 
 const page = () => {
 
-  
   const [token, setToken] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Helper function to get cookie
   const getCookie = (name: string) => {
@@ -20,8 +20,17 @@ const page = () => {
   };
 
   useEffect(() => {
-    setToken(getCookie("access_token"));
-    console.log(token)
+    const accessToken = getCookie("access_token");
+    console.log('Cookie access_token:', accessToken);
+    
+    if (accessToken) {
+      setToken(accessToken);
+      setIsAuthenticated(true);
+    } else {
+      console.log('No access_token found in cookies');
+      // Redirect to sign-in if no token
+      window.location.href = '/sign-in';
+    }
   }, []);
   // for next button 
   const [flowNum , setFlowNum] = useState(1)
@@ -437,6 +446,14 @@ const page = () => {
     setIsSubmitting(true);
 
     try {
+      // Check token first
+      const currentToken = getCookie("access_token");
+      console.log('Current token:', currentToken);
+      
+      if (!currentToken) {
+        throw new Error('ไม่พบ token กรุณาเข้าสู่ระบบใหม่');
+      }
+
       // Prepare form data
       const formDataToSend = new FormData();
       
@@ -470,25 +487,36 @@ const page = () => {
         formDataToSend.append('websiteLink', formData.website);
       }
 
-      const token = getCookie("access_token");
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
+      console.log('API URL:', `${process.env.NEXT_PUBLIC_API_URL}/auction`);
+      console.log('Token being sent:', currentToken);
 
       // Send API request
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${currentToken}`,
         },
         body: formDataToSend,
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
       if (!response.ok) {
-        throw new Error('Failed to create auction');
+        const errorText = await response.text();
+        console.log('Error response:', errorText);
+        
+        if (response.status === 401) {
+          throw new Error('Token หมดอายุหรือไม่ถูกต้อง กรุณาเข้าสู่ระบบใหม่');
+        } else if (response.status === 400) {
+          throw new Error('ข้อมูลไม่ถูกต้อง กรุณาตรวจสอบข้อมูลที่กรอก');
+        } else {
+          throw new Error(`เกิดข้อผิดพลาดในการสร้างงานประมูล (${response.status}): ${errorText}`);
+        }
       }
 
       const result = await response.json();
+      console.log('Success response:', result);
       
       // Show success notification
       setShowSuccessNotification(true);
@@ -500,13 +528,22 @@ const page = () => {
 
     } catch (error) {
       console.error('Error creating auction:', error);
-      setValidationMessage('เกิดข้อผิดพลาดในการสร้างงานประมูล กรุณาลองใหม่อีกครั้ง');
+      setValidationMessage(error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการสร้างงานประมูล กรุณาลองใหม่อีกครั้ง');
       setShowValidationPopup(true);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+
+     // Show loading while checking authentication
+     if (!isAuthenticated) {
+       return (
+         <div className='bg-white w-[100vw] h-[100vh] flex justify-center items-center'>
+           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9399FF]"></div>
+         </div>
+       );
+     }
 
      return (
      <div className='bg-white w-[100vw] h-[100%] flex flex-col items-center'>
