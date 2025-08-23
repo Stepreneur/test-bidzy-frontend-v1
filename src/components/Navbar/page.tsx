@@ -1,10 +1,23 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { BellIcon, MenuIcon } from '../icons'
 
 const page = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getCookie = (name: string) => {
+      return document.cookie
+        .split("; ")
+        .find((row) => row.startsWith(name + "="))
+        ?.split("=")[1] || null;
+    };
+
+    setToken(getCookie("accessToken"));
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -53,18 +66,30 @@ const page = () => {
                 
                 {/* Auth Section */}
                 <div className='px-3'>
+                  {token ? (
                   <button 
-                    className='flex items-center w-full px-4 py-3 text-[16px] text-[#E9635E] hover:bg-red-50 rounded-[12px] transition-colors'
+                    className='flex items-center w-full px-4 py-3 text-[16px] text-[#E9635E] hover:bg-red-50 rounded-[12px] border-none transition-colors'
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span>ออกจากระบบ</span>
                   </button>
+                  ) : (
+                    <button 
+                    className='flex items-center w-full px-4 py-3 text-[16px] text-[#27265C]  hover:bg-red-50 rounded-[12px] border-none transition-colors'
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <span>เข้าสู่ระบบ</span>
+                  </button>
+                  )}
                 </div>
               </div>
             )}
           </div>
-          
-          <button className='hidden lg:flex items-center justify-center w-[85px] py-[12px] rounded-[20px] h-[44px] font-semibold text-[16px] border-1 border-[#B1B1B1] text-red-400 hover:bg-red-50 transition-colors'>Log out</button>
+          {token ? (
+            <button className='hidden lg:flex items-center justify-center w-[85px] py-[12px] rounded-[20px] h-[44px] font-semibold text-[16px]  border-none text-[#E9635E]  hover:bg-red-50 transition-colors'>Log out</button>
+          ) : (
+            <button className='hidden lg:flex items-center justify-center w-[85px] py-[12px] rounded-[20px] h-[44px] font-semibold text-[16px]  border-none text-[#27265C]  hover:bg-red-50 transition-colors'>Log in</button>
+          )}
         </div>
         
 

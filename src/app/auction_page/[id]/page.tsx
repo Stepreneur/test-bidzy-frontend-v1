@@ -12,6 +12,7 @@ interface AuctionData {
   id: number;
   title: string;
   image: string;
+  images?: string[]; // Optional array of images for gallery
   description: string;
   size: string;
   material: string;
@@ -59,6 +60,19 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
   const [error, setError] = useState<string | null>(null)
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
 
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getCookie = (name: string) => {
+      return document.cookie
+        .split("; ")
+        .find((row) => row.startsWith(name + "="))
+        ?.split("=")[1] || null;
+    };
+
+    setToken(getCookie("accessToken"));
+  }, []);
+
   // Unwrap params using React.use()
   const resolvedParams = React.use(params)
   const { id } = resolvedParams
@@ -75,11 +89,8 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         setIsLoading(true)
         setError(null)
         
-        // Get token from localStorage
-        const token = localStorage.getItem('token')
-        if (!token) {
-          throw new Error('No authentication token found')
-        }
+
+        
 
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction/${id}`, {
           method: 'GET',
@@ -181,21 +192,8 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         {/* Creator Info */}
         <CreatorInfo creatorImage={auctionData.user.image} creator={auctionData.user.name} responsive={'tablet'} />
 
-        {/* Image Gallery */}
-        <div className="w-full mb-6">
-          <div className="flex gap-3 pb-2 justify-center">
-            <div className="relative flex-shrink-0">
-              <div className="relative w-[327px] h-[327px] sm:w-[456px] sm:h-[456px] rounded-lg overflow-hidden border border-gray-200">
-                <Image
-                  src={auctionData.image}
-                  alt={auctionData.title}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+                 {/* Image Gallery */}
+         <ImageGallery images={auctionData.images || [auctionData.image]} title={auctionData.title} />
 
         {/* Creator Info */}
         <CreatorInfo creatorImage={auctionData.user.image} creator={auctionData.user.name} responsive={'mobile,desktop'} />
@@ -329,6 +327,73 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
     </div>
   )
 }
+
+const ImageGallery = ({ images, title }: { images: string[], title: string }) => {
+  const [selectedImage, setSelectedImage] = useState(0);
+
+  return (
+    <div className="w-full mb-6">
+      {/* Mobile: Horizontal scrollable gallery */}
+      <div className="sm:hidden">
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          {images.map((image, index) => (
+            <div key={index} className="relative flex-shrink-0">
+              <div className="relative w-[327px] h-[327px] rounded-lg overflow-hidden border border-gray-200">
+                <Image
+                  src={image}
+                  alt={`${title} - รูปที่ ${index + 1}`}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tablet/Desktop: Main image + thumbnail gallery */}
+      <div className="hidden sm:block">
+        {/* Main large image */}
+        <div className="mb-4">
+          <div className="relative w-full h-[456px] rounded-lg overflow-hidden border border-gray-200">
+            <Image
+              src={images[selectedImage]}
+              alt={`${title} - รูปที่ ${selectedImage + 1}`}
+              fill
+              className="object-contain"
+            />
+          </div>
+        </div>
+
+        {/* Thumbnail gallery */}
+        {images.length > 1 && (
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {images.map((image, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedImage(index)}
+                className={`relative flex-shrink-0 transition-all ${
+                  selectedImage === index 
+                    ? 'ring-2 ring-[#9399FF] ring-offset-2' 
+                    : 'hover:opacity-80'
+                }`}
+              >
+                <div className="relative w-[80px] h-[80px] rounded-lg overflow-hidden border border-gray-200">
+                  <Image
+                    src={image}
+                    alt={`${title} thumbnail ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const CreatorInfo = ({creatorImage, creator, responsive}: {creatorImage: string, creator: string, responsive: string}) => {
   return (

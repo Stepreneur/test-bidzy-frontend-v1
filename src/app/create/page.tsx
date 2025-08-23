@@ -9,14 +9,19 @@ import Image from 'next/image'
 
 const page = () => {
 
-  function getCookie(name: string) {
-    return document.cookie
-      .split("; ")
-      .find(row => row.startsWith(name + "="))
-      ?.split("=")[1];
-  }
   
-  const[token, setToken] = useState(getCookie("accessToken"));
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getCookie = (name: string) => {
+      return document.cookie
+        .split("; ")
+        .find((row) => row.startsWith(name + "="))
+        ?.split("=")[1] || null;
+    };
+
+    setToken(getCookie("accessToken"));
+  }, []);
   // for next button 
   const [flowNum , setFlowNum] = useState(1)
 
@@ -558,21 +563,21 @@ const page = () => {
             <Image src='/bidzy/characters/head.png' alt='bidzy character' width={100} height={100} className='object-contain max-w-[300px] w-full' />
             <div className="bg-white rounded-lg p-6 px-[24px] sm:px-[64px] w-full rounded-b-[0px]  max-w-[768px]">
               <div className="text-center mb-6">
-                <p className="text-[#9399FF] font-semibold text-[20px] mb-2">คุณจะบันทึกข้อมูลไว้ไหม</p>
-                <p className="text-[16px] font-semibold text-[#27265C]">ก่อนออกจากหน้านี้</p>
+                <p className="text-[#9399FF] font-semibold text-[20px] mb-2">คุณยืนยันการออกจากหน้านี้</p>
+                <p className="text-[16px] font-semibold text-[#27265C]">ข้อมูลที่คุณกรอกจะไม่ถูกบันทึก</p>
               </div>
               <div className="flex gap-3">
                 <button
-                  onClick={()=>window.location.href='/feed'}
+                  onClick={()=>setShowExitPopup(false)}
                   className="flex-1 bg-[#E9635E] text-white font-semibold py-2 px-4 rounded-[20px] hover:bg-opacity-90 transition-colors"
                 >
-                  Delete
+                  Cancel
                 </button>
                 <button
                   onClick={handleExitConfirm}
                   className="flex-1 bg-[#27265C] text-white font-semibold py-2 px-4 rounded-[20px] hover:bg-opacity-90 transition-colors"
                 >
-                  Save
+                  Confirm
                 </button>
               </div>
             </div>
@@ -601,7 +606,8 @@ const page = () => {
               <span className='font-semibold text-[24px] text-[#9399FF] absolute left-1/2 transform -translate-x-1/2 top-[40px]'>STEP {flowNum}/2</span>
             </div>
           )}
-          <CloudIcon />
+          <div></div>
+          {/* <CloudIcon /> */}
       </div>
       <form className='block w-full'>
                  {/* หนัาแรก */}

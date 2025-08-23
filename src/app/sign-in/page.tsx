@@ -13,6 +13,7 @@ const Sign = () => {
   const [whichRole , setWhichRole] = useState<string | null>(null)
   // for change the flow page
   const [flowNum , setFlowNum] = useState(1)
+  const [isLoading , setIsLoading] = useState(false)
 
   // for notify user that unsuccesfully login
   const  [isFailed , setIsFailed] = useState(false)
@@ -25,6 +26,8 @@ const Sign = () => {
         liffId: '2007827375-02296ylV',
       })
       .then(() => {
+        setIsFailed(false)
+        setIsLoading(true)
         console.log(whichRole)
         fetch( `${process.env.NEXT_PUBLIC_API_URL}/auth/line/sign-in`, {
           method: 'POST',
@@ -46,13 +49,20 @@ const Sign = () => {
             sameSite: "None", // ปลอดภัยขึ้น
             path: "/",
           });
+          if(data.accessToken){
+            window.location.href = '/feed'
+          }
         })
         .catch(err => {
           console.log(err)
+          setIsLoading(false)
+          setIsFailed(true)
         })
       })
       .catch(err => {
         console.log(err)
+        setIsLoading(false)
+        setIsFailed(true)
       })
   }, [whichRole]);
 
@@ -100,6 +110,7 @@ const Sign = () => {
 
   return (
     <div className='bg-white w-[100vw] h-[100vh] flex justify-center'>
+      {isLoading == false ? (
         <div className='flex flex-col gap-[30px] mt-[65px] items-center'>
             <div className='text-[#27265C] font-bold text-[24px] text-center'>WELCOME TO</div>
             <Image src="/bidzy/bidzy-lg.png" width={197} height={64} alt='bidzy logo' className='object-contain' />
@@ -122,6 +133,12 @@ const Sign = () => {
                 ) : (null)}
                 
         </div>
+      ) : isLoading == true && (
+        <div className="w-[100vw] h-[100vh] flex justify-center items-center relative">
+      <div className="w-[100vw] h-[100vh] bg-[url('/Artwork.png')] bg-repeat bg-contain absolute"></div>
+        <span className="text-[#27265C] font-semibold text-[32px] z-10">Loading...</span>
+        </div>
+      )}
 
         {/* for notify that failed sign in */}
         {isFailed && (

@@ -25,9 +25,9 @@ const ChevronLeftIcon = ({
         <path
           d='M15.375 5.25L8.625 12L15.375 18.75'
           stroke='#27265C'
-          stroke-width='2'
-          stroke-linecap='round'
-          stroke-linejoin='round'
+          strokeWidth='2'
+          strokeLinecap='round'
+          strokeLinejoin='round'
         />
       </svg>
     </>
