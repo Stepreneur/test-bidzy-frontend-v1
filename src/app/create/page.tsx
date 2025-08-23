@@ -108,13 +108,42 @@ const page = () => {
     const files = event.target.files;
     if (files) {
       const newImages = Array.from(files);
-      setSelectedImages(prev => [...prev, ...newImages]);
+      console.log('Files selected:', newImages.length);
+      newImages.forEach((file, index) => {
+        console.log(`File ${index + 1}:`, {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          lastModified: new Date(file.lastModified).toLocaleString()
+        });
+      });
+      setSelectedImages(prev => {
+        const newState = [...prev, ...newImages];
+        console.log('Updated selectedImages state:', newState.length, 'images');
+        newState.forEach((img, idx) => {
+          console.log(`State image ${idx + 1}:`, {
+            name: img.name,
+            size: img.size,
+            type: img.type
+          });
+        });
+        return newState;
+      });
     }
   };
 
   // Handle image removal
   const handleRemoveImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    console.log('Removing image at index:', index);
+    setSelectedImages(prev => {
+      const removedImage = prev[index];
+      console.log('Removed image:', {
+        name: removedImage?.name,
+        size: removedImage?.size,
+        type: removedImage?.type
+      });
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   // Handle drag and drop
@@ -126,7 +155,27 @@ const page = () => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files);
     const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    setSelectedImages(prev => [...prev, ...imageFiles]);
+    console.log('Files dropped:', imageFiles.length);
+    imageFiles.forEach((file, index) => {
+      console.log(`Dropped file ${index + 1}:`, {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: new Date(file.lastModified).toLocaleString()
+      });
+    });
+    setSelectedImages(prev => {
+      const newState = [...prev, ...imageFiles];
+      console.log('Updated selectedImages state after drop:', newState.length, 'images');
+      newState.forEach((img, idx) => {
+        console.log(`State image ${idx + 1}:`, {
+          name: img.name,
+          size: img.size,
+          type: img.type
+        });
+      });
+      return newState;
+    });
   };
 
   // Validation functions
@@ -458,9 +507,17 @@ const page = () => {
       const formDataToSend = new FormData();
       
       // Add images
+      console.log('=== PREPARING TO SEND IMAGES ===');
       selectedImages.forEach((image, index) => {
+        console.log(`Appending image ${index + 1} to FormData:`, {
+          name: image.name,
+          size: image.size,
+          type: image.type,
+          fieldName: 'image'
+        });
         formDataToSend.append('image', image);
       });
+      console.log('=== END PREPARING IMAGES ===');
 
       // Add other form fields
       formDataToSend.append('title', formData.artworkName);
@@ -489,6 +546,12 @@ const page = () => {
 
       console.log('API URL:', `${process.env.NEXT_PUBLIC_API_URL}/auction`);
       console.log('Token being sent:', currentToken);
+      console.log('Number of images being sent:', selectedImages.length);
+      
+      // Log FormData contents for debugging
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log('FormData entry:', key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+      }
 
       // Send API request
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction`, {
