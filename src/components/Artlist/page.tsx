@@ -62,9 +62,15 @@ const Artlist = () => {
     };
 
     setToken(getCookie("access_token"));
-    console.log(token)
-
+ 
   }, []);
+
+  useEffect(() => {
+    if (token) {
+      console.log("token updated:", token); // <-- อันนี้จะเห็นค่าหลัง state update
+    }
+  }, [token]);
+  
   // number of artworks
   const [numArts, setNumArts] = useState(0)
   const [allArts, setAllArts] = useState<Artwork[]>([])
