@@ -241,7 +241,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
       <div className='w-[327px] sm:w-[608px]'>
       <div className='h-[56px] flex justify-between items-center relative mb-[30px]'>
              <ChevronLeftIcon
-         onClick={() => {window.location.href='feed'}}
+         onClick={() => {window.location.href='/feed'}}
        />
             <div className='flex flex-col'>
               <span className='font-semibold text-[24px] text-[#27265C]'>รายละเอียดการประมูล</span>

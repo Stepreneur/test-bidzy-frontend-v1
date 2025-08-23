@@ -8,6 +8,10 @@ interface Artwork {
   id: number;
   title: string;
   image: string;
+  images?: Array<{
+    id: number;
+    image: string;
+  }>; // Updated to match API response structure
   description: string;
   size: string;
   material: string;
@@ -204,7 +208,7 @@ const Artlist = () => {
                 <a href={`/auction_page/${art.id}`} className="block w-full h-full">
                   <div className="relative w-full h-full rounded-lg overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow">
                     <Image 
-                      src={art.image} 
+                      src={art.images?.[0]?.image || art.image} 
                       alt={art.title || 'Artwork'}
                       fill
                       className="object-cover"
