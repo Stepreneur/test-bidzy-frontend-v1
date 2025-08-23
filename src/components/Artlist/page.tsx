@@ -61,7 +61,15 @@ const Artlist = () => {
         ?.split("=")[1] || null;
     };
 
-    setToken(getCookie("access_token"));
+    const accessToken = getCookie("access_token");
+    console.log('Cookie access_token:', accessToken);
+    
+    if (accessToken) {
+      setToken(accessToken);
+    } else {
+      console.log('No access_token found in cookies');
+      setError('ไม่พบ token กรุณาเข้าสู่ระบบใหม่');
+    }
  
   }, []);
 
@@ -77,27 +85,49 @@ const Artlist = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-  if (!token) return; // ยังไม่มี token → ไม่ต้องยิง API
-
   const fetchAuctions = async () => {
+    if (!token) return; // ยังไม่มี token → ไม่ต้องยิง API
+    
     try {
       setIsLoading(true)
       setError(null)
       console.log('token ก่อน fetch:', token)
+      console.log('API URL:', `${process.env.NEXT_PUBLIC_API_URL}/auction/by-user`)
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction/by-user`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       })
 
+      console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
+
       if (!response.ok) {
-        const text = await response.text(); // ลองอ่านเป็น text แทน
+        const text = await response.text();
+        console.log('Error response text:', text);
+        
+        // Check if response is HTML (error page)
+        if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+          throw new Error(`Server error: Received HTML instead of JSON. Status: ${response.status}`);
+        }
+        
         throw new Error(`Failed to fetch auctions: ${response.status} - ${text}`)
       }
 
+      // Check content type
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.log('Non-JSON response:', text);
+        throw new Error(`Invalid response format. Expected JSON but got: ${contentType}`);
+      }
+
       const data: Artwork[] = await response.json()
+      console.log('Fetched data:', data)
+      
       const sortedData = data.sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )
@@ -113,8 +143,11 @@ const Artlist = () => {
     }
   }
 
-  fetchAuctions()
-}, [token])
+  useEffect(() => {
+    if (token) {
+      fetchAuctions()
+    }
+  }, [token])
 
 
   if (isLoading) {
@@ -130,7 +163,18 @@ const Artlist = () => {
       <div className="flex flex-col items-center justify-center h-64">
         <div className="text-red-500 text-center">
           <p className="font-semibold">เกิดข้อผิดพลาด</p>
-          <p className="text-sm">{error}</p>
+          <p className="text-sm mb-4">{error}</p>
+          <button 
+            onClick={() => {
+              setError(null);
+              if (token) {
+                fetchAuctions();
+              }
+            }}
+            className="bg-[#9399FF] text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
+          >
+            ลองใหม่
+          </button>
         </div>
       </div>
     )
