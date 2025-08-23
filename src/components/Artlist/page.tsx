@@ -84,12 +84,11 @@ const Artlist = () => {
     try {
       setIsLoading(true)
       setError(null)
-
+      console.log('token ก่อน fetch:', token)
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auction/by-user`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
       })
 
