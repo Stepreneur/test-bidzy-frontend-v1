@@ -559,6 +559,19 @@ const page = () => {
        console.log('FormData object:', formDataToSend);
        console.log('FormData constructor:', formDataToSend.constructor.name);
        
+       // Try to see what's actually in FormData
+       console.log('FormData entries():', formDataToSend.entries());
+       console.log('FormData keys():', formDataToSend.keys());
+       console.log('FormData values():', formDataToSend.values());
+       
+       // Check if FormData has any entries
+       let hasEntries = false;
+       for (let [key, value] of formDataToSend.entries()) {
+         hasEntries = true;
+         break;
+       }
+       console.log('FormData has entries:', hasEntries);
+       
        let entryCount = 0;
        let imageCount = 0;
        let textCount = 0;
