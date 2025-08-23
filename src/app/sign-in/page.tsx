@@ -6,77 +6,106 @@ import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import liff from '@line/liff';
 import Cookies from 'js-cookie';
+
 const Sign = () => {
- // for is sure then press next for user
+  // for is sure then press next for user
   const [isSure , setIsSure] = useState(false)
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [whichRole , setWhichRole] = useState<string | null>(null)
   // for change the flow page
   const [flowNum , setFlowNum] = useState(1)
   const [isLoading , setIsLoading] = useState(false)
+  const [isLiffInitialized, setIsLiffInitialized] = useState(false)
 
   // for notify user that unsuccesfully login
-  const  [isFailed , setIsFailed] = useState(false)
+  const [isFailed , setIsFailed] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
-  // line login
+  // Initialize LIFF only once
   useEffect(() => {    
-    liff.init({
-        liffId: '2007827375-02296ylV',
-      })
-      .then(() => {
-        setIsFailed(false)
-        setIsLoading(true)
-        console.log(whichRole)
-        console.log(liff.getIDToken())
-        fetch( `${process.env.NEXT_PUBLIC_API_URL}/auth/line/sign-in`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            'token' : liff.getIDToken(),
-            "role": whichRole
-          }),
-        })
-        .then(res => res.json())
-        .then(data => {
-          console.log('success')
-          console.log(data)
-          Cookies.set("access_token", data.accessToken, {
-            expires: 365, // วันหมดอายุ (365 วัน)
-            secure: true, // ให้ส่ง cookie เฉพาะ HTTPS
-            sameSite: "None", // ปลอดภัยขึ้น
-            path: "/",
-          });
-          if(data.accessToken){
-            window.location.href = '/feed'
-          }
-        })
-        .catch(err => {
-          console.log(err)
-          setIsLoading(false)
-          setIsFailed(true)
-        })
-      })
-      .catch(err => {
-        console.log(err)
-        setIsLoading(false)
-        setIsFailed(true)
-      })
+    const initializeLiff = async () => {
+      try {
+        await liff.init({
+          liffId: '2007827375-02296ylV',
+        });
+        setIsLiffInitialized(true);
+        console.log('LIFF initialized successfully');
+      } catch (err) {
+        console.error('LIFF initialization failed:', err);
+        setIsFailed(true);
+        setErrorMessage('ไม่สามารถเชื่อมต่อกับ LINE ได้');
+      }
+    };
+
+    initializeLiff();
   }, []);
 
   const handleLoginLiff = async () => {
+    if (!isLiffInitialized) {
+      setErrorMessage('กรุณารอสักครู่ กำลังเชื่อมต่อกับ LINE...');
+      return;
+    }
+
+    if (!whichRole) {
+      setErrorMessage('กรุณาเลือกประเภทผู้ใช้ก่อน');
+      return;
+    }
+
     try {
-      await liff.login();
+      setIsLoading(true);
+      setIsFailed(false);
+      setErrorMessage('');
+
+      const idToken = liff.getIDToken();
+      if (!idToken) {
+        // If no ID token, redirect to LINE login
+        await liff.login();
+        return;
+      }
+
+      // Call API with role
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/line/sign-in`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          'token': idToken,
+          "role": whichRole
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Login success:', data);
+
+      if (data.accessToken) {
+        Cookies.set("access_token", data.accessToken, {
+          expires: 365,
+          secure: true,
+          sameSite: "None",
+          path: "/",
+        });
+        window.location.href = '/feed';
+      } else {
+        throw new Error('ไม่ได้รับ access token');
+      }
+
     } catch (error) {
-      console.log(error);
+      console.error('Login error:', error);
+      setIsLoading(false);
+      setIsFailed(true);
+      setErrorMessage(error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
     }
   };
 
-  
   const handleFlowNum = () => {
     setFlowNum(2)
   }
+
   const handleNext = (role: string) => {
     // รีเซ็ตปุ่มก่อน (คืนสีเก่า)
     if(role == "bidder"){
@@ -126,7 +155,13 @@ const Sign = () => {
                     <p className='text-[#9399FF] text-[16px] font-semibold text-center'>Connect with us</p>
                     <div className='flex flex-row gap-4 items-center rounded-[24px] justify-center w-[293px] h-[42px] border-1 border-[#82BCFF]'>
                       <Image src = '/brands/line-1.png' width={26} height={26} alt='line logo' className='object-contain' />
-                      <button onClick={handleLoginLiff} className='text-[16px] font-semibold text-[#27265C]'>Continue with line</button>
+                      <button 
+                        onClick={handleLoginLiff} 
+                        disabled={!isLiffInitialized || !whichRole}
+                        className={`text-[16px] font-semibold text-[#27265C] ${(!isLiffInitialized || !whichRole) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        Continue with line
+                      </button>
                       </div>
                  </div>
                 ) : (null)}
@@ -143,7 +178,9 @@ const Sign = () => {
         {isFailed && (
           <div className='animate-dropOnce fixed top-[30px] left-[50%] transform  -translate-x-1/2 flex flex-row items-center  justify-center gap-2 rounded-[8px] bg-[#E9635E] w-[187px] h-[48px]'>
             <Image src='/no.png' width={19.7} height={19.7} alt='no icon' /> 
-            <div className='font-semibold text-[16px] text-white'>คุณล็อคอินไม่สำเร็จ</div>
+            <div className='font-semibold text-[16px] text-white'>
+              {errorMessage || 'คุณล็อคอินไม่สำเร็จ'}
+            </div>
         </div>
           ) }
     </div>
