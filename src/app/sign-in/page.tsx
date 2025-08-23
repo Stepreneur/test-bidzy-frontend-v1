@@ -19,9 +19,7 @@ const Sign = () => {
   const  [isFailed , setIsFailed] = useState(false)
 
   // line login
-  useEffect(() => {
-    if (!whichRole) return; // Don't run if whichRole is null
-    
+  useEffect(() => {    
     liff.init({
         liffId: '2007827375-02296ylV',
       })
