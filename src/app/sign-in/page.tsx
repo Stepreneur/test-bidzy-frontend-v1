@@ -47,7 +47,7 @@ const Sign = () => {
     const initializeLiff = async () => {
       try {
         await liff.init({
-          liffId: '2007827375-02296ylV',
+          liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
         });
         setIsLiffInitialized(true);
         console.log('LIFF initialized successfully');
